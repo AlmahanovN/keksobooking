@@ -17,6 +17,8 @@ var MIN_LENGTH = 1;//Минимальная длина массива. Нужн�
 var PHOTO_PATH = ['http://o0.github.io/assets/images/tokyo/hotel1.jpg', 'http://o0.github.io/assets/images/tokyo/hotel2.jpg', 'http://o0.github.io/assets/images/tokyo/hotel3.jpg'];//Путь в фотографиям
 var PIN_WIDTH = 50;//Ширини метки
 var PIN_HEIGHT = 70;//Высота метки
+var MAIN_PIN_WIDTH = 65;//Ширина главной метки 
+var MAIN_PIN_HEIGHT = 90;//Высота главной метки
 
 //Функция для вывода рандомного значения из массива.
 var getRandomValueOfArray = function(array, count) {
@@ -75,7 +77,7 @@ var getInformationAboutAds = function (array, count) {
             },
             'offer': {
                 'title': OFFER_TITLE[i],
-                'adress': randomXLocation + ' ' + randomYLocation,
+                'adress': 'x: ' + randomXLocation + ', y: ' + randomYLocation,
                 'price': getRandomNumber(MIN_PRICE, MAX_PRICE),
                 'type': getRandomValueOfArray(HOUSING_TYPES),
                 'rooms': getRandomNumber(MIN_NUMBER_OF_ROOMS, MAX_NUMBER_OF_ROOMS),
@@ -99,32 +101,34 @@ var getInformationAboutAds = function (array, count) {
 getInformationAboutAds(ads, NUMBER_ADS);//Вызываем функцию чтобы заполнить массив.
 
 var map = document.querySelector('.map');
-map.classList.remove('map--faded');//Делаем карту активной.
+//Делаем карту активной.
 var similarMapPinList = document.querySelector('.map__pins');//Находим элемент куда будем вставлять наши метки. на карте
-var similarMapPinTemplate = document.querySelector('template').content.querySelector('.map__pin');//Находи шаблон меток.
+var similarMapPinTemplate = document.querySelector('template').content.querySelector('.map__pin');//Находимlo шаблон меток.
 
 
 //Функция для получения меток.
-var getPins = function (mapPinElement) {
+var getPins = function (mapPinElement, id) {
     var mapPin = similarMapPinTemplate.cloneNode(true);
 
     mapPin.style.left = (mapPinElement.offer.location.x + PIN_WIDTH / 2) + 'px';
     mapPin.style.top = (mapPinElement.offer.location.y + PIN_HEIGHT / 2) + 'px';
     mapPin.querySelector('img').src = mapPinElement.author.avatar;
     mapPin.querySelector('img').alt = mapPinElement.offer.title;
+    mapPin.dataset.adsId = id;
     return mapPin;
 }
+
+
 
 //Функция для генерирования нашей разметки.
 var fragmentGenerator = function (array, render) {
     var fragment = document.createDocumentFragment();
     for(var i = 0; i < array.length; i++) {
-        fragment.appendChild(render(array[i]));
+        fragment.appendChild(render(array[i] , i));
     }
     return fragment;
+   
 }
-
-similarMapPinList.appendChild(fragmentGenerator(ads, getPins));//Вставляем наши метки.
 
 var similarMapCardTepmlate = document.querySelector('template').content.querySelector('.map__card');//Находим шаблон карточек объявлений.
 
@@ -170,7 +174,7 @@ getRightHouseType = function (type) {
 }
 
 //Функция для получения карточек объявлений.
-var getMapCards = function (mapCardElelment) {
+var getMapCards = function (mapCardElelment, id) {
         var mapCard = similarMapCardTepmlate.cloneNode(true);
 
         mapCard.querySelector('.popup__title').textContent = mapCardElelment.offer.title;
@@ -184,10 +188,58 @@ var getMapCards = function (mapCardElelment) {
         mapCard.querySelector('.popup__description').textContent = mapCardElelment.offer.description;
         renderImage(mapCard.querySelector('.popup__pictures'), mapCardElelment.offer.photos);
         mapCard.querySelector('.popup__avatar').src = mapCardElelment.author.avatar;
+        mapCard.dataset.adsId = id;
 
         return mapCard;
 }
 
 var mapFilters = document.querySelector('.map__filters-container');//Находим элемент перед которым будем вставлять наши карточки. 
 
-map.insertBefore(fragmentGenerator(ads, getMapCards), mapFilters);//Вставляем наши объявления.
+//Фукция для переключения состояния активности полей формы.
+var toogleConditionInput = function(selector, value) {
+    var elements = document.querySelectorAll(selector);
+    for(var i = 0; i < elements.length; i++) {
+        elements[i].disabled = value;
+    }
+}
+
+
+toogleConditionInput('fieldset', true);//По умолчанию поля формы неактивны
+
+var mainMainPin = map.querySelector('.map__pin--main');//Находим нашу главную метку
+
+var addressInput = document.querySelector('#address');
+addressInput.value = 'x: ' + mainMainPin.offsetLeft + ', y: ' + mainMainPin.offsetTop;
+
+//Функция для активации карты
+onMainMapPinClick = function(evt) {
+    map.classList.remove('map--faded');
+    toogleConditionInput('fieldset', false);
+    var a = map.querySelector('.map__pin');
+    addressInput.value = 'x: ' + mainMainPin.offsetLeft + ', y: ' + (mainMainPin.offsetTop + MAIN_PIN_HEIGHT / 2);
+    if(a && !a.classList.contains('map__pin--main')) {
+        map.removeChild(a);
+    }
+    similarMapPinList.appendChild(fragmentGenerator(ads, getPins));//Вставляем наши метки.
+}
+
+mainMainPin.addEventListener('mouseup', onMainMapPinClick)
+
+//Аллилуйя! У меня получилось !╰(▔∀▔)╯ 
+// Я страдал 2 дня из-за того-что, что не знал как связать метки на карте и карточки объявления ~(>_<~)
+//Функция при клике на метку будет показывать соответствующую карточку с объявлением
+onMapPinClick = function(evt) {
+    var target = evt.target;
+    var mapPin = target.closest('.map__pin');
+    var card = map.querySelector('.map__card');
+    if(card) {
+        map.removeChild(card)
+    }
+    if(!mapPin.classList.contains('map__pin--main')) {
+        map.insertBefore(getMapCards(ads[mapPin.dataset.adsId], mapPin.dataset.adsId), mapFilters);
+    }
+
+}
+
+similarMapPinList.addEventListener('click', onMapPinClick)
+
