@@ -124,7 +124,7 @@ var getPins = function (mapPinElement, id) {
 var fragmentGenerator = function (array, render) {
     var fragment = document.createDocumentFragment();
     for(var i = 0; i < array.length; i++) {
-        fragment.appendChild(render(array[i] , i));
+        fragment.appendChild(render(array[i], i));
     }
     return fragment;
    
@@ -155,20 +155,20 @@ getRightHouseType = function (type) {
 
     switch(type) {
         case 'palace':
-        houseType = 'Дворец'
-        break;
+            houseType = 'Дворец'
+            break;
 
         case 'flat':
-        houseType = 'Квартира'
-        break;
+            houseType = 'Квартира'
+            break;
 
         case 'house':
-        houseType = 'Дом'
-        break;
+            houseType = 'Дом'
+            break;
 
         case 'bungalo':
-        houseType = 'Бунгало'
-        break; 
+            houseType = 'Бунгало'
+            break; 
     }
     return houseType;
 }
@@ -204,30 +204,75 @@ var toogleConditionInput = function(selector, value) {
 }
 
 
-toogleConditionInput('fieldset', true);//По умолчанию поля формы неактивны
 
-var mainMainPin = map.querySelector('.map__pin--main');//Находим нашу главную метку
+toogleConditionInput('fieldset', true);//По умолчанию поля формы неактивны.
 
-var addressInput = document.querySelector('#address');
-addressInput.value = 'x: ' + mainMainPin.offsetLeft + ', y: ' + mainMainPin.offsetTop;
+var mainMapPin = map.querySelector('.map__pin--main');//Находим нашу главную метку.
 
-//Функция для активации карты
-onMainMapPinClick = function(evt) {
-    map.classList.remove('map--faded');
-    toogleConditionInput('fieldset', false);
-    var a = map.querySelector('.map__pin');
-    addressInput.value = 'x: ' + mainMainPin.offsetLeft + ', y: ' + (mainMainPin.offsetTop + MAIN_PIN_HEIGHT / 2);
-    if(a && !a.classList.contains('map__pin--main')) {
-        map.removeChild(a);
+var getMainMapPinLocation = function() {
+    var addressInput = document.querySelector('#address');
+    if(map.classList.contains('map--faded')) {
+        addressInput.value = 'x: ' + mainMapPin.offsetLeft + ', y: ' + mainMapPin.offsetTop;
+    } else {
+        addressInput.value = 'x: ' + mainMapPin.offsetLeft + ', y: ' + (mainMapPin.offsetTop + MAIN_PIN_HEIGHT / 2);
     }
-    similarMapPinList.appendChild(fragmentGenerator(ads, getPins));//Вставляем наши метки.
 }
 
-mainMainPin.addEventListener('mouseup', onMainMapPinClick)
+getMainMapPinLocation();
 
-//Аллилуйя! У меня получилось !╰(▔∀▔)╯ 
-// Я страдал 2 дня из-за того-что, что не знал как связать метки на карте и карточки объявления ~(>_<~)
-//Функция при клике на метку будет показывать соответствующую карточку с объявлением
+var adForm = document.querySelector('.notice__form');
+
+var mapActivate = function() {
+    map.classList.remove('map--faded');
+    adForm.classList.remove('notice__form--disabled');
+    toogleConditionInput('fieldset', false);
+    similarMapPinList.appendChild(fragmentGenerator(ads, getPins));//Вставляем наши метки.
+    while(similarMapPinList.children.length > 10) {
+        similarMapPinList.removeChild(similarMapPinList.lastChild);
+    }
+}
+
+//Отслеживаем нажатие на главную метку.
+mainMapPin.addEventListener('mousedown', function(evt) {
+    evt.preventDefault();
+
+    mapActivate();
+
+    var startCoords = {
+        'x': evt.clientX,
+        'y': evt.clientY
+    }
+
+    var onMouseMove = function(moveEvt) {
+        var shift = {
+            'x': startCoords.x - moveEvt.clientX,
+            'y': startCoords.y - moveEvt.clientY
+        }
+
+        startCoords = {
+            'x': moveEvt.clientX,
+            'y': moveEvt.clientY
+        }
+
+        mainMapPin.style.top = (mainMapPin.offsetTop - shift.y) + 'px';
+        mainMapPin.style.left = (mainMapPin.offsetLeft - shift.x) + 'px';
+        getMainMapPinLocation();
+    }
+
+    
+
+    var onMouseUp = function(upEvt) {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+})
+
+//Аллилуйя! У меня получилось !╰(▔∀▔)╯ .
+// Я страдал 2 дня из-за того-что, что не знал как связать метки на карте и карточки объявления ~(>_<~).
+//Функция при клике на метку будет показывать соответствующую карточку с объявлением.
 onMapPinClick = function(evt) {
     var target = evt.target;
     var mapPin = target.closest('.map__pin');
@@ -238,8 +283,104 @@ onMapPinClick = function(evt) {
     if(!mapPin.classList.contains('map__pin--main')) {
         map.insertBefore(getMapCards(ads[mapPin.dataset.adsId], mapPin.dataset.adsId), mapFilters);
     }
-
 }
 
+//Отмлеживаем нажатие на метки.
 similarMapPinList.addEventListener('click', onMapPinClick)
 
+var adFormTitleInput = adForm.querySelector('#title');
+
+adFormTitleInput.addEventListener('invalid', function() {
+    if(adFormTitleInput.validity.tooShort) {
+        adFormTitleInput.setCustomValidity('Заголовок объявления должен состоять минимум из 30-и символов. Длинна текста сейчас ' + adFormTitleInput.value.length);
+    } else if(adFormTitleInput.validity.tooLong) {
+        adFormTitleInput.setCustomValidity('Заголовок объявления должен состоять максимум из 100 символов. Длинна текста сейчас ' + adFormTitleInput.value.length);
+    } else if(adFormTitleInput.validity.valueMissing) {
+        adFormTitleInput.setCustomValidity('Обязательное поле');
+    } else {
+        adFormTitleInput.setCustomValidity('');
+    }
+})
+
+var adFormType = adForm.querySelector('#type');
+var adFormPriceInput = adForm.querySelector('#price');
+var adFormPriceInputMin = 0;
+var BUNGALO_MIN_PRICE = 0;
+var FLAT_MIN_PRICE = 1000;
+var HOUSE_MIN_PRICE = 5000;
+var PALACE_MIN_PRICE = 10000;
+
+var getMinPrice = function() {
+    var adFormTypeSelectedValue = adFormType.options[adFormType.selectedIndex].value;
+
+    switch(adFormTypeSelectedValue) {
+        case 'bungalo': 
+            adFormPriceInputMin = BUNGALO_MIN_PRICE;
+            break;
+        case 'flat':
+            adFormPriceInputMin = FLAT_MIN_PRICE;
+            break;
+        case 'house':
+            adFormPriceInputMin = HOUSE_MIN_PRICE;
+            break;
+        case 'palace':
+            adFormPriceInputMin = PALACE_MIN_PRICE;
+            break;
+    }
+
+    adFormPriceInput.placeholder = adFormPriceInputMin;
+    adFormPriceInput.min = adFormPriceInputMin;
+}
+
+adFormType.addEventListener('change', getMinPrice)
+
+adFormPriceInput.addEventListener('invalid', function() {
+    if(adFormPriceInput.validity.rangeOverflow) {
+        adFormPriceInput.setCustomValidity('Цена не должна превышать ' + adFormPriceInput.max + ' рублей');
+    } else if (adFormPriceInput.validity.rangeUnderflow) {
+        adFormPriceInput.setCustomValidity('Цена не должна быть ниже ' + adFormPriceInput.min + ' рублей');
+    } else if(adFormPriceInput.validity.valueMissing) {
+        adFormPriceInput.setCustomValidity('Обязательное поле');
+    } else {
+        adFormPriceInput.setCustomValidity('');
+    }
+})
+
+var adFormCheckinTimeSelect = adForm.querySelector('#timein');
+var adFormChechkoutTimeSelect = adForm.querySelector('#timeout');
+var AD_MAX_ROOMS = 100;
+var AD_NOT_GUESTS = 0;
+
+var syncCheckinChechkoutTime = function(evt, selectElement) {
+    var target = evt.currentTarget.selectedIndex;
+    selectElement.options[target].selected = true;
+}
+
+adFormCheckinTimeSelect.addEventListener('change', function(evt){
+    syncCheckinChechkoutTime(evt, adFormChechkoutTimeSelect);
+})
+
+adFormChechkoutTimeSelect.addEventListener('change', function(evt) {
+    syncCheckinChechkoutTime(evt, adFormCheckinTimeSelect);
+})
+
+var adFormNumberRoomsSelect = adForm.querySelector('#room_number');
+var adFormNumderGuestsSelect = adForm.querySelector('#capacity');
+
+var syncRoomsGuetsSelect = function(evt) {
+    var target = evt.currentTarget;
+    var selectedOption = target.options[target.selectedIndex].value;
+    
+    console.log(adFormNumderGuestsSelect);
+    for(var i = 0; i < target.length; i++) {     
+        adFormNumderGuestsSelect.options[i].disabled = false;
+        if(+selectedOption < +adFormNumderGuestsSelect.options[i].value || +adFormNumderGuestsSelect.options[i].value === AD_NOT_GUESTS) {
+            console.log(adFormNumderGuestsSelect.options[i].value);
+            adFormNumderGuestsSelect.options[i].disabled = true;
+        } else if(+selectedOption === AD_MAX_ROOMS && +adFormNumderGuestsSelect.options[i].value != AD_NOT_GUESTS) {
+            adFormNumderGuestsSelect.options[i].disabled = true;
+        }
+    }
+}
+
+adFormNumberRoomsSelect.addEventListener('change', syncRoomsGuetsSelect)
