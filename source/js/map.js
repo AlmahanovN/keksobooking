@@ -1,8 +1,8 @@
 var NUMBER_ADS = 8;//Число объявлений.
 var OFFER_TITLE = ["Большая уютная квартира", "Маленькая неуютная квартира", "Огромный прекрасный дворец", "Маленький ужасный дворец", "Красивый гостевой домик", "Некрасивый негостеприимный домик", "Уютное бунгало далеко от моря", "Неуютное бунгало по колено в воде"];//Заголовки предложений.
-var ADRESS_LOCATION_X_MIN = 300;//Минимальная кордината по оси X.
-var ADRESS_LOCATION_X_MAX = 900;//Максимальная координата по оси X.
-var ADRESS_LOCATION_Y_MIN = 130;//Минимальная кордината по оси Y.
+var ADRESS_LOCATION_X_MIN = 0;//Минимальная кордината по оси X.
+var ADRESS_LOCATION_X_MAX = 1200;//Максимальная координата по оси X.
+var ADRESS_LOCATION_Y_MIN = 165;//Минимальная кордината по оси Y.
 var ADRESS_LOCATION_Y_MAX = 630;//Максимальная координата по оси Y.
 var MIN_PRICE = 1000;//Минимальная цена.
 var MAX_PRICE = 1000000;//Макаслимальная цена.
@@ -29,47 +29,53 @@ var getRandomValueOfArray = function(array, count) {
 //Функция для вывода рандомного числа.
 var getRandomNumber = function(min, max) {
     var number = Math.round(min + Math.random() * (max - min));
+
     return number;
 }
 
 //Функция рандомного вывода длинны массива.
 var getRandomArrayLength = function(minLength, array) {
     var length = Math.round(minLength + Math.random() * (array.length - minLength));
+
     return length;
 }
 
 //Функция рандомного вывода списка.
 var getRandomList = function(array) {
     var featuresList = [];
-    for(var i = 0; i <  getRandomArrayLength(MIN_LENGTH, array); i++) {
+
+    for (var i = 0; i <  getRandomArrayLength(MIN_LENGTH, array); i++) {
         featuresList.push(getRandomValueOfArray(array));
     }
+
     return featuresList;
 }
 
 //Функция фильтрации повторяющихся значений.
 var getAnArrayWithoutDupclicateValues = function(array) {
-    if(array.length < 2) {
+    if (array.length < 2) {
         return array;
     } else {
-        for(var i = 0; i < array.length; i++) {
-            for(var j = i + 1; j < array.length; j++) {
-                if(array[i] == array[j]) {
+        for (var i = 0; i < array.length; i++) {
+            for (var j = i + 1; j < array.length; j++) {
+                if (array[i] == array[j]) {
                     array.splice(j, 1);
                 }
             }
         }
     }
+
     return array;
 }
 
 var ads = [];//Массив где будет храниться информация о объявлениях.
 
 //Фунция для заполнения массива с информацией о объявлениях.
-var getInformationAboutAds = function (array, count) {
-    for(var i = 0; i < count; i++) {
+var getInformationAboutAds = function(array, count) {
+    for (var i = 0; i < count; i++) {
         var randomXLocation = getRandomNumber(ADRESS_LOCATION_X_MIN, ADRESS_LOCATION_X_MAX);
         var randomYLocation = getRandomNumber(ADRESS_LOCATION_Y_MIN, ADRESS_LOCATION_Y_MAX);
+
         array.push(
             {
             'author': {
@@ -95,6 +101,7 @@ var getInformationAboutAds = function (array, count) {
             }
         );
     }
+    
     return array;
 }
 
@@ -107,25 +114,28 @@ var similarMapPinTemplate = document.querySelector('template').content.querySele
 
 
 //Функция для получения меток.
-var getPins = function (mapPinElement, id) {
+var getPins = function(mapPinElement, id) {
     var mapPin = similarMapPinTemplate.cloneNode(true);
 
-    mapPin.style.left = (mapPinElement.offer.location.x + PIN_WIDTH / 2) + 'px';
-    mapPin.style.top = (mapPinElement.offer.location.y + PIN_HEIGHT / 2) + 'px';
+    mapPin.style.left = (mapPinElement.offer.location.x  + PIN_WIDTH / 2) + 'px';
+    mapPin.style.top = (mapPinElement.offer.location.y - PIN_HEIGHT / 2) + 'px';
     mapPin.querySelector('img').src = mapPinElement.author.avatar;
     mapPin.querySelector('img').alt = mapPinElement.offer.title;
     mapPin.dataset.adsId = id;
+    
     return mapPin;
 }
 
 
 
 //Функция для генерирования нашей разметки.
-var fragmentGenerator = function (array, render) {
+var fragmentGenerator = function(array, render) {
     var fragment = document.createDocumentFragment();
-    for(var i = 0; i < array.length; i++) {
+
+    for (var i = 0; i < array.length; i++) {
         fragment.appendChild(render(array[i], i));
     }
+
     return fragment;
    
 }
@@ -133,18 +143,19 @@ var fragmentGenerator = function (array, render) {
 var similarMapCardTepmlate = document.querySelector('template').content.querySelector('.map__card');//Находим шаблон карточек объявлений.
 
 //Функция для вставки для списка преимуществ сдаваемого жилья.
-var renderListItem = function (element, textClassName, array) {
+var renderListItem = function(element, textClassName, array) {
     element.textContent = '';
-    for(var i = 0; i < array.length; i++) {
+
+    for (var i = 0; i < array.length; i++) {
         element.insertAdjacentHTML('beforeEnd', '<li class="' + textClassName + array[i] + '"></li>');
     }
-    return element;
 }
 
 //Фунция для вставки списка фотографий сдаваемого жилья.
-var renderImage = function (element, array) {
+var renderImage = function(element, array) {
     element.textContent = '';
-    for(var i = 0; i < array.length; i++) {
+
+    for (var i = 0; i < array.length; i++) {
         element.insertAdjacentHTML('beforeEnd', '<li><img src="' + array[i] + '" width="45" height="40"></li>')
     }
 }
@@ -153,7 +164,7 @@ var renderImage = function (element, array) {
 getRightHouseType = function (type) {
     var houseType = ''
 
-    switch(type) {
+    switch (type) {
         case 'palace':
             houseType = 'Дворец'
             break;
@@ -174,7 +185,7 @@ getRightHouseType = function (type) {
 }
 
 //Функция для получения карточек объявлений.
-var getMapCards = function (mapCardElelment, id) {
+var getMapCards = function(mapCardElelment, id) {
         var mapCard = similarMapCardTepmlate.cloneNode(true);
 
         mapCard.querySelector('.popup__title').textContent = mapCardElelment.offer.title;
@@ -198,7 +209,8 @@ var mapFilters = document.querySelector('.map__filters-container');//Наход�
 //Фукция для переключения состояния активности полей формы.
 var toogleConditionInput = function(selector, value) {
     var elements = document.querySelectorAll(selector);
-    for(var i = 0; i < elements.length; i++) {
+
+    for (var i = 0; i < elements.length; i++) {
         elements[i].disabled = value;
     }
 }
@@ -211,7 +223,8 @@ var mainMapPin = map.querySelector('.map__pin--main');//Находим нашу 
 
 var getMainMapPinLocation = function() {
     var addressInput = document.querySelector('#address');
-    if(map.classList.contains('map--faded')) {
+
+    if (map.classList.contains('map--faded')) {
         addressInput.value = 'x: ' + mainMapPin.offsetLeft + ', y: ' + mainMapPin.offsetTop;
     } else {
         addressInput.value = 'x: ' + mainMapPin.offsetLeft + ', y: ' + (mainMapPin.offsetTop + MAIN_PIN_HEIGHT / 2);
@@ -232,11 +245,51 @@ var mapActivate = function() {
     }
 }
 
+
+
+//Аллилуйя! У меня получилось !╰(▔∀▔)╯ .
+// Я страдал 2 дня из-за того-что, что не знал как связать метки на карте и карточки объявления ~(>_<~).
+//Функция при клике на метку будет показывать соответствующую карточку с объявлением.
+onMapPinClick = function(evt) {
+    var target = evt.target;
+    var mapPin = target.closest('.map__pin');
+    var card = map.querySelector('.map__card');
+
+    if (card) {
+        map.removeChild(card);
+    }
+
+    if (!mapPin.classList.contains('map__pin--main')) {
+        map.insertBefore(getMapCards(ads[mapPin.dataset.adsId], mapPin.dataset.adsId), mapFilters);
+    }    
+}
+
+map.addEventListener('click', function(evt) {
+    var target = evt.target;
+    var closePopup = target.closest('.popup__close');
+    var deleteCard = map.querySelector('.map__card');
+
+    if (closePopup) {
+        map.removeChild(deleteCard);
+    }
+})
+
+//Отмлеживаем нажатие на метки.
+similarMapPinList.addEventListener('click', function(evt) {
+    onMapPinClick(evt);
+})
+
+
 //Отслеживаем нажатие на главную метку.
 mainMapPin.addEventListener('mousedown', function(evt) {
     evt.preventDefault();
 
     mapActivate();
+
+    // var limitY = {
+    //     'xLeft': map.offsetWidth;
+    //     x
+    // var limitX = map.offsetWidth - map.offsetWidth;
 
     var startCoords = {
         'x': evt.clientX,
@@ -254,8 +307,27 @@ mainMapPin.addEventListener('mousedown', function(evt) {
             'y': moveEvt.clientY
         }
 
-        mainMapPin.style.top = (mainMapPin.offsetTop - shift.y) + 'px';
-        mainMapPin.style.left = (mainMapPin.offsetLeft - shift.x) + 'px';
+        var xCoordsCalc = mainMapPin.offsetLeft - shift.x;
+        var yCoordsCalc = mainMapPin.offsetTop - shift.y
+        var limitLeft = (map.offsetWidth - map.offsetWidth) + MAIN_PIN_WIDTH / 2;
+        var limitRight = map.offsetWidth - MAIN_PIN_WIDTH / 2;
+        var limitTop = (map.offsetHeight - map.offsetHeight) + ADRESS_LOCATION_Y_MIN - MAIN_PIN_WIDTH / 2; 
+        // -  PIN_HEIGHT / 2
+        var limitBottom = map.offsetHeight - ADRESS_LOCATION_Y_MIN;
+
+
+        mainMapPin.style.left = xCoordsCalc + 'px';
+        mainMapPin.style.top = yCoordsCalc + 'px';
+    
+        if (xCoordsCalc < limitLeft) {
+            mainMapPin.style.left = limitLeft + 'px';
+        } else if (xCoordsCalc > limitRight) {
+            mainMapPin.style.left = limitRight + 'px';
+        } else if (yCoordsCalc < limitTop) {
+            mainMapPin.style.top = limitTop + 'px';
+        } else if (yCoordsCalc > limitBottom) {
+            mainMapPin.style.top = limitBottom + 'px';
+        }
         getMainMapPinLocation();
     }
 
@@ -270,23 +342,6 @@ mainMapPin.addEventListener('mousedown', function(evt) {
     document.addEventListener('mouseup', onMouseUp)
 })
 
-//Аллилуйя! У меня получилось !╰(▔∀▔)╯ .
-// Я страдал 2 дня из-за того-что, что не знал как связать метки на карте и карточки объявления ~(>_<~).
-//Функция при клике на метку будет показывать соответствующую карточку с объявлением.
-onMapPinClick = function(evt) {
-    var target = evt.target;
-    var mapPin = target.closest('.map__pin');
-    var card = map.querySelector('.map__card');
-    if(card) {
-        map.removeChild(card)
-    }
-    if(!mapPin.classList.contains('map__pin--main')) {
-        map.insertBefore(getMapCards(ads[mapPin.dataset.adsId], mapPin.dataset.adsId), mapFilters);
-    }
-}
-
-//Отмлеживаем нажатие на метки.
-similarMapPinList.addEventListener('click', onMapPinClick)
 
 var adFormTitleInput = adForm.querySelector('#title');
 
@@ -295,13 +350,13 @@ var setErrorStyle = function(element, thickness, color) {
 }
 
 adFormTitleInput.addEventListener('invalid', function() {
-    if(adFormTitleInput.validity.tooShort) {
+    if (adFormTitleInput.validity.tooShort) {
         adFormTitleInput.setCustomValidity('Заголовок объявления должен состоять минимум из 30-и символов. Длинна текста сейчас ' + adFormTitleInput.value.length);
         setErrorStyle(adFormTitleInput, '2px', '#ff0000');
-    } else if(adFormTitleInput.validity.tooLong) {
+    } else if (adFormTitleInput.validity.tooLong) {
         adFormTitleInput.setCustomValidity('Заголовок объявления должен состоять максимум из 100 символов. Длинна текста сейчас ' + adFormTitleInput.value.length);
         setErrorStyle(adFormTitleInput, '2px', '#ff0000');
-    } else if(adFormTitleInput.validity.valueMissing) {
+    } else if (adFormTitleInput.validity.valueMissing) {
         adFormTitleInput.setCustomValidity('Обязательное поле');
         setErrorStyle(adFormTitleInput, '2px', '#ff0000');
     } else {
@@ -321,7 +376,7 @@ var PALACE_MIN_PRICE = 10000;
 var getMinPrice = function() {
     var adFormTypeSelectedValue = adFormType.options[adFormType.selectedIndex].value;
 
-    switch(adFormTypeSelectedValue) {
+    switch (adFormTypeSelectedValue) {
         case 'bungalo': 
             adFormPriceInputMin = BUNGALO_MIN_PRICE;
             break;
@@ -343,13 +398,13 @@ var getMinPrice = function() {
 adFormType.addEventListener('change', getMinPrice)
 
 adFormPriceInput.addEventListener('invalid', function() {
-    if(adFormPriceInput.validity.rangeOverflow) {
+    if (adFormPriceInput.validity.rangeOverflow) {
         adFormPriceInput.setCustomValidity('Цена не должна превышать ' + adFormPriceInput.max + ' рублей');
         setErrorStyle(adFormPriceInput, '2px', '#ff0000');
     } else if (adFormPriceInput.validity.rangeUnderflow) {
         adFormPriceInput.setCustomValidity('Цена не должна быть ниже ' + adFormPriceInput.min + ' рублей');
         setErrorStyle(adFormPriceInput, '2px', '#ff0000');
-    } else if(adFormPriceInput.validity.valueMissing) {
+    } else if (adFormPriceInput.validity.valueMissing) {
         adFormPriceInput.setCustomValidity('Обязательное поле');
         setErrorStyle(adFormPriceInput, '2px', '#ff0000');
     } else {
@@ -365,6 +420,7 @@ var AD_NOT_GUESTS = 0;
 
 var syncCheckinChechkoutTime = function(evt, selectElement) {
     var target = evt.currentTarget.selectedIndex;
+
     selectElement.options[target].selected = true;
 }
 
@@ -383,17 +439,17 @@ var syncRoomsGuetsSelect = function(evt) {
     var target = evt.currentTarget;
     var selectedOption = target.options[target.selectedIndex];
     
-    for(var i = 0; i < target.length; i++) {     
+    for (var i = 0; i < target.length; i++) {     
         adFormNumderGuestsSelect.options[i].disabled = true;
-        if(+selectedOption.value >=  +adFormNumderGuestsSelect.options[i].value) {
+        if (+selectedOption.value >=  +adFormNumderGuestsSelect.options[i].value) {
             adFormNumderGuestsSelect.options[i].disabled = false;
-            if(+adFormNumderGuestsSelect.options[i].value === AD_NOT_GUESTS) {
+            if (+adFormNumderGuestsSelect.options[i].value === AD_NOT_GUESTS) {
                 adFormNumderGuestsSelect.options[i].disabled = true;
             } 
         } 
-        if(+selectedOption.value === AD_MAX_ROOMS) {
+        if (+selectedOption.value === AD_MAX_ROOMS) {
             adFormNumderGuestsSelect.options[i].disabled = true;
-            if(+adFormNumderGuestsSelect.options[i].value === AD_NOT_GUESTS) {
+            if (+adFormNumderGuestsSelect.options[i].value === AD_NOT_GUESTS) {
                 adFormNumderGuestsSelect.options[i].disabled = false;
             }
         }
@@ -402,7 +458,7 @@ var syncRoomsGuetsSelect = function(evt) {
 
 
 var validityNumberAndGuestsInputs = function() {
-    if(adFormNumderGuestsSelect.options[adFormNumderGuestsSelect.selectedIndex].disabled === true) {
+    if (adFormNumderGuestsSelect.options[adFormNumderGuestsSelect.selectedIndex].disabled === true) {
         adFormNumderGuestsSelect.setCustomValidity('Выбрано недопустимое значение. Пожалуйста, попробуйте выбрать');
         setErrorStyle(adFormNumderGuestsSelect, '2px', '#ff0000');;
     } else {
