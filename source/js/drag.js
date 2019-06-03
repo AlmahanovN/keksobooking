@@ -3,7 +3,11 @@
 (function() {
     var map = document.querySelector('.map');
     var mainMapPin = map.querySelector('.map__pin--main');//Находим нашу главную метку.
-    
+    var ADRESS_LOCATION_Y_MIN =  165;
+    var MainPin = {
+        'WIDTH': 65,
+        'HEIGHT': 90
+    }
 
     //Отслеживаем нажатие на главную метку.
     mainMapPin.addEventListener('mousedown', function(evt) {
@@ -27,10 +31,10 @@
 
             var xCoordsCalc = mainMapPin.offsetLeft - shift.x;
             var yCoordsCalc = mainMapPin.offsetTop - shift.y
-            var limitLeft = (map.offsetWidth - map.offsetWidth) + window.data.MAIN_PIN_WIDTH / 2;
-            var limitRight = map.offsetWidth - window.data.MAIN_PIN_WIDTH / 2;
-            var limitTop = (map.offsetHeight - map.offsetHeight) +window.data. ADRESS_LOCATION_Y_MIN - window.data.MAIN_PIN_WIDTH / 2; 
-            var limitBottom = map.offsetHeight - window.data.ADRESS_LOCATION_Y_MIN;
+            var limitLeft = (map.offsetWidth - map.offsetWidth) + MainPin.WIDTH / 2;
+            var limitRight = map.offsetWidth - MainPin.WIDTH / 2;
+            var limitTop = (map.offsetHeight - map.offsetHeight) + ADRESS_LOCATION_Y_MIN - MainPin.WIDTH / 2; 
+            var limitBottom = map.offsetHeight - ADRESS_LOCATION_Y_MIN;
 
 
             mainMapPin.style.left = xCoordsCalc + 'px';

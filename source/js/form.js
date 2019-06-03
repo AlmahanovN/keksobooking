@@ -4,6 +4,16 @@
     var adForm = document.querySelector('.notice__form');
     var adFormTitleInput = adForm.querySelector('#title');
 
+    var apartmentPrice = {
+        'BUNGALO': 0,
+        'FLAT': 1000,
+        'HOUSE': 5000,
+        'PALACE': 10000,
+    }
+
+    var AD_MAX_ROOMS = 100;
+    var AD_NOT_GUESTS = 0;
+
     var setErrorStyle = function(element, thickness, color) {
         element.style.border = thickness + ' solid ' + color;
     }
@@ -33,16 +43,16 @@
 
         switch (adFormTypeSelectedValue) {
             case 'bungalo': 
-                adFormPriceInputMin = window.data.BUNGALO_MIN_PRICE;
+                adFormPriceInputMin = apartmentPrice.BUNGALO;
                 break;
             case 'flat':
-                adFormPriceInputMin = window.data.FLAT_MIN_PRICE;
+                adFormPriceInputMin = apartmentPrice.FLAT;
                 break;
             case 'house':
-                adFormPriceInputMin = window.data.HOUSE_MIN_PRICE;
+                adFormPriceInputMin = apartmentPrice.HOUSE;
                 break;
             case 'palace':
-                adFormPriceInputMin = window.data.PALACE_MIN_PRICE;
+                adFormPriceInputMin = apartmentPrice.PALACE;
                 break;
         }
 
@@ -96,13 +106,13 @@
             adFormNumderGuestsSelect.options[i].disabled = true;
             if (+selectedOption.value >=  +adFormNumderGuestsSelect.options[i].value) {
                 adFormNumderGuestsSelect.options[i].disabled = false;
-                if (+adFormNumderGuestsSelect.options[i].value === window.data.AD_NOT_GUESTS) {
+                if (+adFormNumderGuestsSelect.options[i].value === AD_NOT_GUESTS) {
                     adFormNumderGuestsSelect.options[i].disabled = true;
                 } 
             } 
-            if (+selectedOption.value === window.data.AD_MAX_ROOMS) {
+            if (+selectedOption.value === AD_MAX_ROOMS) {
                 adFormNumderGuestsSelect.options[i].disabled = true;
-                if (+adFormNumderGuestsSelect.options[i].value === window.data.AD_NOT_GUESTS) {
+                if (+adFormNumderGuestsSelect.options[i].value === AD_NOT_GUESTS) {
                     adFormNumderGuestsSelect.options[i].disabled = false;
                 }
             }
@@ -126,4 +136,9 @@
     })
 
     adFormNumderGuestsSelect.addEventListener('change', validityNumberAndGuestsInputs)
+
+    adForm.addEventListener('submit', function(evt) {
+        window.save(new FormData(adForm))
+        evt.preventDefault();
+    })
 })();
