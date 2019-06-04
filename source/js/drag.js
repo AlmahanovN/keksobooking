@@ -1,15 +1,19 @@
 'use strict';
 
 (function() {
+    
+    //*******/
+    //В этом модуле я делаю возможным перетакивание главной метки.
+    //*******/
+
     var map = document.querySelector('.map');
-    var mainMapPin = map.querySelector('.map__pin--main');//Находим нашу главную метку.
+    var mainMapPin = map.querySelector('.map__pin--main');
     var ADRESS_LOCATION_Y_MIN =  165;
     var MainPin = {
         'WIDTH': 65,
         'HEIGHT': 90
     }
 
-    //Отслеживаем нажатие на главную метку.
     mainMapPin.addEventListener('mousedown', function(evt) {
         evt.preventDefault();
 
@@ -29,25 +33,29 @@
                 'y': moveEvt.clientY
             }
 
-            var xCoordsCalc = mainMapPin.offsetLeft - shift.x;
-            var yCoordsCalc = mainMapPin.offsetTop - shift.y
-            var limitLeft = (map.offsetWidth - map.offsetWidth) + MainPin.WIDTH / 2;
-            var limitRight = map.offsetWidth - MainPin.WIDTH / 2;
-            var limitTop = (map.offsetHeight - map.offsetHeight) + ADRESS_LOCATION_Y_MIN - MainPin.WIDTH / 2; 
-            var limitBottom = map.offsetHeight - ADRESS_LOCATION_Y_MIN;
+            var totalCoords = {
+                'x': mainMapPin.offsetLeft - shift.x,
+                'y': mainMapPin.offsetTop - shift.y
+            }
 
+            var limit = {
+                'left': (map.offsetWidth - map.offsetWidth) + MainPin.WIDTH / 2,
+                'right': map.offsetWidth - MainPin.WIDTH / 2,
+                'top': (map.offsetHeight - map.offsetHeight) + ADRESS_LOCATION_Y_MIN - MainPin.WIDTH / 2,
+                'bottom': map.offsetHeight - ADRESS_LOCATION_Y_MIN
+            }
 
-            mainMapPin.style.left = xCoordsCalc + 'px';
-            mainMapPin.style.top = yCoordsCalc + 'px';
+            mainMapPin.style.left = totalCoords.x + 'px';
+            mainMapPin.style.top = totalCoords.y + 'px';
         
-            if (xCoordsCalc < limitLeft) {
-                mainMapPin.style.left = limitLeft + 'px';
-            } else if (xCoordsCalc > limitRight) {
-                mainMapPin.style.left = limitRight + 'px';
-            } else if (yCoordsCalc < limitTop) {
-                mainMapPin.style.top = limitTop + 'px';
-            } else if (yCoordsCalc > limitBottom) {
-                mainMapPin.style.top = limitBottom + 'px';
+            if (totalCoords.x < limit.left) {
+                mainMapPin.style.left = limit.left + 'px';
+            } else if (totalCoords.x > limit.right) {
+                mainMapPin.style.left = limit.right + 'px';
+            } else if (totalCoords.y < limit.top) {
+                mainMapPin.style.top = limit.top + 'px';
+            } else if (totalCoords.y > limit.bottom) {
+                mainMapPin.style.top = limit.bottom + 'px';
             }
 
             window.pinLocation.getMainMapPinLocation();

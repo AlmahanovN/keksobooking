@@ -1,23 +1,31 @@
 'use strict';
 
 (function() {
+
+    //*******//
+    //В этом модуле я делаю страницу активной и отрисовываю метки и карточки объявлений.
+    //*******//
+
     var map = document.querySelector('.map');
-    var mainMapPin = map.querySelector('.map__pin--main');//Находим нашу главную метку.
-    var similarMapPinTemplate = document.querySelector('template').content.querySelector('.map__pin');//Находимlo шаблон меток.
-    var similarMapCardTepmlate = document.querySelector('template').content.querySelector('.map__card');//Находим шаблон карточек объявлений.
-    var similarMapPinList = document.querySelector('.map__pins');//Находим элемент куда будем вставлять наши метки. на карте
-    var dataAds;
+    var mainMapPin = map.querySelector('.map__pin--main');
+    var similarMapPinTemplate = document.querySelector('template').content.querySelector('.map__pin');
+    var similarMapCardTepmlate = document.querySelector('template').content.querySelector('.map__card');
+    var similarMapPinList = document.querySelector('.map__pins');
 
 
+
+
+
+    //*******//
     //Модуль с метками объявлений
-
+    //*******//
 
     window.pins = function() {
         var Pin = {
             'WIDTH':50,
             'HEIGHT': 70,
         }
-        //Функция для получения меток.
+
         var getPins = function(mapPinElement, id) {
             var mapPin = similarMapPinTemplate.cloneNode(true);
 
@@ -30,7 +38,6 @@
             return mapPin;
         }
 
-        //Функция для генерирования нашей разметки.
         var fragmentGenerator = function(array, render) {
             var fragment = document.createDocumentFragment();
 
@@ -43,7 +50,6 @@
 
         var adForm = document.querySelector('.notice__form');
 
-         //Фукция для переключения состояния активности полей формы.
         var toogleConditionInput = function(selector, value) {
             var elements = document.querySelectorAll(selector);
 
@@ -52,59 +58,37 @@
             }
         }
 
-        toogleConditionInput('fieldset', true);//По умолчанию поля формы неактивны.
+        toogleConditionInput('fieldset', true);
 
-        var successPinHandler = function(data) {
-            dataAds = data;
-        }
-
-        var errorHandler = function(errorMessage) {
-            var node = document.createElement('div');
-
-            node.style = 'z-index: 100; margin: 0 auto; text-align: center; color: white; background-color: red';
-            node.style.position = 'absolute';
-            node.style.left = 0;
-            node.style.right = 0;
-            node.style.fontSize = '30px';
-            node.textContent = errorMessage;
-
-            document.body.insertAdjacentElement('afterBegin', node);
-        }
-
-        window.load(successPinHandler, errorHandler);
-
-        //Функция для активации карты
         var mapActivate = function() {
             map.classList.remove('map--faded');
             adForm.classList.remove('notice__form--disabled');
             toogleConditionInput('fieldset', false);
-            similarMapPinList.appendChild(fragmentGenerator(dataAds, getPins));
+            similarMapPinList.appendChild(fragmentGenerator(window.data.ads, getPins));
             while(similarMapPinList.children.length > 12) {
                 similarMapPinList.removeChild(similarMapPinList.lastChild);
             }   
         }
 
-        mainMapPin.addEventListener('click', mapActivate)
+        mainMapPin.addEventListener('mousedown', mapActivate)
     }
 
 
 
 
 
-
+    //*******//
     //Модуль с карточками объявлений
-
+    //*******//
 
     window.card = function() {
-        //Фукнция для отображения на русском тип сдаваемого жилья.
-        var getRightHouseType = {
+        var RightHouseType = {
             'palace': 'Жворец',
             'flat': 'Квартира',
             'house': 'Дом',
             'bungalo': 'Бунгало'
         }
 
-        //Функция для вставки для списка преимуществ сдаваемого жилья.
         var renderListItem = function(element, textClassName, array) {
             element.textContent = '';
 
@@ -113,7 +97,6 @@
             }
         }
 
-        //Фунция для вставки списка фотографий сдаваемого жилья.
         var renderImage = function(element, array) {
             element.textContent = '';
 
@@ -122,7 +105,6 @@
             }
         }
 
-        //Функция для получения карточек объявлений.
         var getMapCards = function(mapCardElelment, id) {
             var mapCard = similarMapCardTepmlate.cloneNode(true);
 
@@ -130,7 +112,7 @@
             mapCard.querySelector('.popup__text--adress').children[0].textContent = mapCardElelment.offer.adress;
             mapCard.querySelector('.popup__text--price').textContent = mapCardElelment.offer.price;
             mapCard.querySelector('.popup__text--price').insertAdjacentHTML('beforeEnd', ' &#x20bd;/<span>ночь</span>')
-            mapCard.querySelector('.popup__type').textContent = getRightHouseType[mapCardElelment.offer.type];
+            mapCard.querySelector('.popup__type').textContent = RightHouseType[mapCardElelment.offer.type];
             mapCard.querySelector('.popup__text--capacity').textContent = mapCardElelment.offer.rooms + ' комнаты для ' + mapCardElelment.offer.guests + ' гостей';
             mapCard.querySelector('.popup__text--time').textContent = 'Заезд после ' + mapCardElelment.offer.checkin + ' , выезд до ' + mapCardElelment.offer.checkout;
             renderListItem(mapCard.querySelector('.popup__features'), 'feature feature--', mapCardElelment.offer.features);
@@ -142,7 +124,7 @@
             return mapCard;
         }
 
-        var mapFilters = document.querySelector('.map__filters-container');//Находим элемент перед которым будем вставлять наши карточки. 
+        var mapFilters = document.querySelector('.map__filters-container');
 
         var getMainMapPinLocation = function() {
             var addressInput = document.querySelector('#address');
@@ -156,9 +138,6 @@
 
         getMainMapPinLocation();
 
-        //Аллилуйя! У меня получилось !╰(▔∀▔)╯ .
-        // Я страдал 2 дня из-за того-что, что не знал как связать метки на карте и карточки объявления ~(>_<~).
-        //Функция при клике на метку будет показывать соответствующую карточку с объявлением.
         var onMapPinClick = function(evt) {
             var target = evt.target;
             var unnecessaryMapPin = target.closest('.map__pin--main');
@@ -170,11 +149,11 @@
             }
 
             if (!unnecessaryMapPin) {
-                map.insertBefore(getMapCards(dataAds[mapPin.dataset.adsId], mapPin.dataset.adsId), mapFilters);
+                map.insertBefore(getMapCards(window.data.ads[mapPin.dataset.adsId], mapPin.dataset.adsId), mapFilters);
             }
         }
 
-        var onCloseButton = function(evt) {
+        var onCloseButtonClick = function(evt) {
             var target = evt.target;
             var closePopup = target.closest('.popup__close');
             var deleteCard = map.querySelector('.map__card');
@@ -184,9 +163,8 @@
             }
         }
 
-        map.addEventListener('click', onCloseButton)
+        map.addEventListener('click', onCloseButtonClick)
 
-        //Отмлеживаем нажатие на метки.
         similarMapPinList.addEventListener('click', function(evt) {
             onMapPinClick(evt);
         })

@@ -1,10 +1,15 @@
 'use strict';
 
 (function() {
+
+    //*******/
+    //В этом модуле я делаю валидацию формы и отправку его данных.
+    //*******/
+
     var adForm = document.querySelector('.notice__form');
     var adFormTitleInput = adForm.querySelector('#title');
 
-    var apartmentPrice = {
+    var apartmentMinPrice = {
         'BUNGALO': 0,
         'FLAT': 1000,
         'HOUSE': 5000,
@@ -14,23 +19,15 @@
     var AD_MAX_ROOMS = 100;
     var AD_NOT_GUESTS = 0;
 
-    var setErrorStyle = function(element, thickness, color) {
-        element.style.border = thickness + ' solid ' + color;
-    }
-
     adFormTitleInput.addEventListener('invalid', function() {
         if (adFormTitleInput.validity.tooShort) {
             adFormTitleInput.setCustomValidity('Заголовок объявления должен состоять минимум из 30-и символов. Длинна текста сейчас ' + adFormTitleInput.value.length);
-            setErrorStyle(adFormTitleInput, '2px', '#ff0000');
         } else if (adFormTitleInput.validity.tooLong) {
             adFormTitleInput.setCustomValidity('Заголовок объявления должен состоять максимум из 100 символов. Длинна текста сейчас ' + adFormTitleInput.value.length);
-            setErrorStyle(adFormTitleInput, '2px', '#ff0000');
         } else if (adFormTitleInput.validity.valueMissing) {
             adFormTitleInput.setCustomValidity('Обязательное поле');
-            setErrorStyle(adFormTitleInput, '2px', '#ff0000');
         } else {
             adFormTitleInput.setCustomValidity('');
-            setErrorStyle(adFormTitleInput, '1px', "#d9d9d3");
         }
     })
 
@@ -43,16 +40,16 @@
 
         switch (adFormTypeSelectedValue) {
             case 'bungalo': 
-                adFormPriceInputMin = apartmentPrice.BUNGALO;
+                adFormPriceInputMin = apartmentMinPrice.BUNGALO;
                 break;
             case 'flat':
-                adFormPriceInputMin = apartmentPrice.FLAT;
+                adFormPriceInputMin = apartmentMinPrice.FLAT;
                 break;
             case 'house':
-                adFormPriceInputMin = apartmentPrice.HOUSE;
+                adFormPriceInputMin = apartmentMinPrice.HOUSE;
                 break;
             case 'palace':
-                adFormPriceInputMin = apartmentPrice.PALACE;
+                adFormPriceInputMin = apartmentMinPrice.PALACE;
                 break;
         }
 
@@ -65,16 +62,12 @@
     adFormPriceInput.addEventListener('invalid', function() {
         if (adFormPriceInput.validity.rangeOverflow) {
             adFormPriceInput.setCustomValidity('Цена не должна превышать ' + adFormPriceInput.max + ' рублей');
-            setErrorStyle(adFormPriceInput, '2px', '#ff0000');
         } else if (adFormPriceInput.validity.rangeUnderflow) {
             adFormPriceInput.setCustomValidity('Цена не должна быть ниже ' + adFormPriceInput.min + ' рублей');
-            setErrorStyle(adFormPriceInput, '2px', '#ff0000');
         } else if (adFormPriceInput.validity.valueMissing) {
             adFormPriceInput.setCustomValidity('Обязательное поле');
-            setErrorStyle(adFormPriceInput, '2px', '#ff0000');
         } else {
             adFormPriceInput.setCustomValidity('');
-            setErrorStyle(adFormPriceInput, '1px', "#d9d9d3");
         }
     })
 
@@ -123,10 +116,8 @@
     var validityNumberAndGuestsInputs = function() {
         if (adFormNumderGuestsSelect.options[adFormNumderGuestsSelect.selectedIndex].disabled === true) {
             adFormNumderGuestsSelect.setCustomValidity('Выбрано недопустимое значение. Пожалуйста, попробуйте выбрать');
-            setErrorStyle(adFormNumderGuestsSelect, '2px', '#ff0000');;
         } else {
             adFormNumderGuestsSelect.setCustomValidity('');
-            setErrorStyle(adFormNumderGuestsSelect, '1px', "#d9d9d3");
         }
     }
 
@@ -137,8 +128,36 @@
 
     adFormNumderGuestsSelect.addEventListener('change', validityNumberAndGuestsInputs)
 
+    var successFormHandler = function(message) {
+        var node = document.createElement('div');
+        node.style = 'z-index: 100; margin: 0 auto; text-align: center; color: #ffffff; font-size: 50px; background-color: green; opacity: 0.85; cursor: pointer;';
+        node.style.position = 'fixed';
+        node.style.left = 0;
+        node.style.right = 0;
+        node.style.top = 0;
+        node.style.bottom = 0;
+
+        node.insertAdjacentHTML('afterBegin', '<p>Форма отправлена успешно</p>')
+        
+
+        document.body.appendChild(node);
+
+        var closeSuccessPopup = function(evt) {
+            evt.preventDefault();
+            document.body.removeChild(node);
+        }
+
+        node.addEventListener('click', function(evt) {
+            closeSuccessPopup(evt)
+        })
+
+        window.addEventListener('keydown', function(evt) {
+            window.util.isEscEvent(evt, closeSuccessPopup(evt));
+        })
+    }
+
     adForm.addEventListener('submit', function(evt) {
-        window.save(new FormData(adForm))
+        window.save(new FormData(adForm), successFormHandler, window.util.errorHandler)
         evt.preventDefault();
     })
 })();

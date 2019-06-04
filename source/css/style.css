@@ -37,6 +37,8 @@ button[type=submit] {
 
   border-radius: 8px;
   border: 4px solid #ffaa99;
+
+  cursor: pointer;
 }
 
 button[type=submit]:hover {
@@ -130,6 +132,7 @@ textarea:focus {
   background: url('../img/features-sprite.png') center no-repeat;
   background-size: 100%;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .feature--dishwasher {
