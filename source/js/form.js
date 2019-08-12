@@ -94,21 +94,32 @@
     var syncRoomsGuetsSelect = function(evt) {
         var target = evt.currentTarget;
         var selectedOption = target.options[target.selectedIndex];
-        
-        for (var i = 0; i < target.length; i++) {     
-            adFormNumderGuestsSelect.options[i].disabled = true;
-            if (+selectedOption.value >=  +adFormNumderGuestsSelect.options[i].value) {
-                adFormNumderGuestsSelect.options[i].disabled = false;
-                if (+adFormNumderGuestsSelect.options[i].value === AD_NOT_GUESTS) {
-                    adFormNumderGuestsSelect.options[i].disabled = true;
-                } 
-            } 
-            if (+selectedOption.value === AD_MAX_ROOMS) {
-                adFormNumderGuestsSelect.options[i].disabled = true;
-                if (+adFormNumderGuestsSelect.options[i].value === AD_NOT_GUESTS) {
-                    adFormNumderGuestsSelect.options[i].disabled = false;
-                }
-            }
+
+        switch(selectedOption.value) {
+            case '1':
+                adFormNumderGuestsSelect.options[0].disabled = true;
+                adFormNumderGuestsSelect.options[1].disabled = true;
+                adFormNumderGuestsSelect.options[2].disabled = false;
+                adFormNumderGuestsSelect.options[3].disabled = true;
+                break;
+            case '2':
+                adFormNumderGuestsSelect.options[0].disabled = true;
+                adFormNumderGuestsSelect.options[1].disabled = false;
+                adFormNumderGuestsSelect.options[2].disabled = false;
+                adFormNumderGuestsSelect.options[3].disabled = true;
+                break;
+            case '3':
+                adFormNumderGuestsSelect.options[0].disabled = false;
+                adFormNumderGuestsSelect.options[1].disabled = false;
+                adFormNumderGuestsSelect.options[2].disabled = false;
+                adFormNumderGuestsSelect.options[3].disabled = true;
+                break;
+            case '100':
+                adFormNumderGuestsSelect.options[0].disabled = true;
+                adFormNumderGuestsSelect.options[1].disabled = true;
+                adFormNumderGuestsSelect.options[2].disabled = true;
+                adFormNumderGuestsSelect.options[3].disabled = false;
+                break;
         }
     }
 
